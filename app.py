@@ -15,18 +15,24 @@ class Game(db.Model):
     __tablename__ = 'game'
 
     id = sa.Column(sa.Integer, primary_key=True)
+    card_count = sa.Column(sa.Integer, nullable=False)
     cards = relationship('Card', backref="game")
     teams = relationship('Team', backref="game")
 
-    def __repr__(self):
-        return f"Game {self.id} ({len(self.teams)})\n{self.cards}"
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "teams": [t.serialize() for t in self.teams],
-            "cards": [c.serialize() for c in self.cards]
-        }
+    def serialize(self, *keys):
+        if not keys:
+            keys = ['id', 'teams', 'card_count']
+        data = {}
+        for key in keys:
+            if key == 'id':
+                data[key] = self.id
+            if key == 'teams':
+                data[key] = [t.serialize() for t in self.teams]
+            if key == 'cards':
+                data[key] = [c.serialize() for c in self.cards]
+            if key == 'card_count':
+                data[key] = self.card_count
+        return data
 
 
 class Team(db.Model):
@@ -43,11 +49,11 @@ class Team(db.Model):
         data = {}
         for key in keys:
             if key == "id":
-                data["id"] = self.id
+                data[key] = self.id
             if key == "name":
-                data["name"] = self.name
+                data[key] = self.name
             if key == "players":
-                data["players"] = [p.serialize() for p in self.players]
+                data[key] = [p.serialize() for p in self.players]
         return data
 
 
@@ -60,8 +66,16 @@ class Player(db.Model):
     cards = relationship('Card', backref="player", foreign_keys='Card.player_id')
     guessed = relationship('Card', backref="guesser", foreign_keys='Card.guessed_by')
 
-    def serialize(self):
-        return {"id": self.id, "name": self.name}
+    def serialize(self, *keys):
+        if not keys:
+            keys = ['id', 'name']
+        data = {}
+        for key in keys:
+            if key == 'id':
+                data[key] = self.id
+            if key == 'name':
+                data[key] = self.name
+        return data
 
 
 class Card(db.Model):
@@ -73,28 +87,26 @@ class Card(db.Model):
     guessed_by = sa.Column(sa.Integer, sa.ForeignKey('player.id'))
     player_id = sa.Column(sa.Integer, sa.ForeignKey('player.id'), nullable=False)
 
-    def __repr__(self):
-        return f"{self.id} {self.text} ({self.guessed_by})"
-
     def serialize(self, *keys):
         if not keys:
             keys = ["id", "text", "guessed_by"]
         data = {}
         for key in keys:
             if key == "id":
-                data["id"] = self.id
+                data[key] = self.id
             if key == "text":
-                data["text"] = self.text
+                data[key] = self.text
             if key == "guessed_by":
-                data["guessed_by"] = self.guesser and self.guesser.serialize()
+                data[key] = self.guesser and self.guesser.serialize()
         return data
 
 
 @app.route("/games", methods=["PUT"])
 def new_game():
-    game = Game()
+    data = request.json
+    game = Game(card_count=data['card_count'])
     db.session.add(game)
-    for team_data in request.json['teams']:
+    for team_data in data['teams']:
         team = Team(name=team_data.get('name'))
         team.game = game
         db.session.add(team)
