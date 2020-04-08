@@ -1,17 +1,23 @@
 <template>
-  <div class="home">
-    <h2>Game list</h2>
-    <div v-for="game in games" :key="game">
-      {{game}}
+  <div id="home">
+    <b-navbar id="nav" class="is-spaced has-shadow" wrapper-class="container">
+      <template slot="brand">
+        <b-navbar-item tag="router-link" to="/">
+          <img src="/logo.webp">
+        </b-navbar-item>
+      </template>
+      <template slot="end">
+        <b-navbar-item>
+          <router-link tag="button" to="/new" class="button is-primary">
+            New Game
+          </router-link>
+        </b-navbar-item>
+      </template>
+    </b-navbar>
+    <div class="section">
+      <div class="container">
+        <router-view/>
+      </div>
     </div>
   </div>
 </template>
-
-<script>
-import { Component, Vue } from 'vue-property-decorator';
-
-@Component
-export default class Home extends Vue {
-  games = ['Game 1', 'Game 2']
-}
-</script>
