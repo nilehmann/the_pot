@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
 db = SQLAlchemy(app)
 
@@ -113,7 +114,7 @@ class Card(db.Model):
 @app.route('/<path:path>')
 def catch_all(path):
     path = safe_join('ui/dist', path)
-    if os.path.exists(path):
+    if os.path.isfile(path):
         return send_file(path)
     else:
         return send_from_directory('ui/dist', 'index.html')
