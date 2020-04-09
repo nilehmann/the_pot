@@ -1,6 +1,7 @@
 <template>
   <div class="play">
     <Keypress :key-code="32" event="keyup" @pressed="keyPressed" />
+    <Keypress :key-code="27" event="keyup" @pressed="stop" />
     <Navbar/>
     <div class="section">
       <div v-if="state == 'stopped'" class="container">
