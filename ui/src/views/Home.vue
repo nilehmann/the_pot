@@ -3,7 +3,7 @@
     <b-navbar id="nav" class="is-spaced has-shadow" wrapper-class="container">
       <template slot="brand">
         <b-navbar-item tag="router-link" to="/">
-          <img src="/logo.webp">
+          <img src="/logo.webp"> The Pot
         </b-navbar-item>
       </template>
       <template slot="end">

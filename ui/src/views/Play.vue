@@ -1,33 +1,35 @@
 <template>
   <div class="play">
     <Keypress :key-code="32" event="keyup" @pressed="keyPressed" />
-    <b-navbar id="nav" class="is-spaced has-shadow" wrapper-class="container">
-      <template slot="brand">
-        <b-navbar-item tag="router-link" to="/">
-          <img src="/logo.webp">
-        </b-navbar-item>
-      </template>
-      <template slot="end">
-        <b-navbar-item tag="div">
-          <a class="button is-primary" v-on:click="$router.go(-1)">
-            <strong>Back</strong>
-          </a>
-        </b-navbar-item>
-      </template>
-    </b-navbar>
+    <Navbar/>
     <div class="section">
       <div v-if="state == 'stopped'" class="container">
-        <b-button v-on:click="start" class="is-large start" :disabled="isLoading">
+        <b-button
+          v-on:click="start"
+          class="is-large start"
+          :disabled="isLoading"
+        >
           Start
         </b-button>
       </div>
       <div v-else-if="card && state == 'started'" class="container">
-        <b-message class="card">
-          {{card.text}}
-        </b-message>
+        <div class="card-container">
+          <b-message class="card">
+            {{card.text}}
+          </b-message>
+        </div>
+        <b-progress :value="timeLeft*100/maxTime" class="timer" size="is-tiny" />
         <div class="buttons">
-          <b-button v-on:click="stop" :disabled="isLoading">Stop</b-button>
-          <b-button v-on:click="next" :disabled="isLoading">Next</b-button>
+          <b-button v-on:click="stop" :disabled="isLoading" class="is-medium">
+            Stop
+          </b-button>
+          <b-button
+            v-on:click="next"
+            :disabled="isLoading"
+            class="is-medium"
+          >
+            Next
+          </b-button>
         </div>
       </div>
       <div v-else class="container">
@@ -42,7 +44,9 @@ import { Component, Vue, Prop } from 'vue-property-decorator';
 import Keypress from 'vue-keypress';
 import axios from 'axios';
 
-@Component({ components: { Keypress } })
+import Navbar from '../components/Navbar.vue';
+
+@Component({ components: { Keypress, Navbar } })
 export default class Play extends Vue {
   @Prop(String) gameId
 
@@ -52,6 +56,12 @@ export default class Play extends Vue {
 
   isLoading = false
 
+  timeLeft = 0;
+
+  maxTime = 60;
+
+  tickMilli = 100;
+
   keyPressed() {
     if (this.state === 'stopped') {
       this.start();
@@ -60,11 +70,12 @@ export default class Play extends Vue {
     }
   }
 
-
   start() {
     if (this.isLoading || this.state !== 'stopped') {
       return;
     }
+
+    this.setTimer();
     this.isLoading = true;
     axios
       .get(`${this.$API}/games/${this.gameId}/draw`)
@@ -86,7 +97,22 @@ export default class Play extends Vue {
   }
 
   stop() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
     this.state = 'stopped';
+  }
+
+  setTimer() {
+    this.timeLeft = this.maxTime;
+    this.interval = setInterval(this.tick, this.tickMilli);
+  }
+
+  tick() {
+    this.timeLeft -= this.tickMilli / 1000;
+    if (this.timeLeft <= 0) {
+      this.stop();
+    }
   }
 
   get playerId() {
@@ -121,8 +147,13 @@ export default class Play extends Vue {
     align-items: center;
   }
 
-  .card {
+  .card-container {
     width: 500px;
-    min-height: 70px;
+    min-height: 200px;
+    margin-bottom: 50px;
+  }
+
+  .timer {
+    width: 500px;
   }
 </style>

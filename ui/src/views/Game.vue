@@ -1,22 +1,9 @@
 <template>
   <div class="game" v-if="game">
-    <b-navbar id="nav" class="is-spaced has-shadow" wrapper-class="container">
-      <template slot="brand">
-        <b-navbar-item tag="router-link" to="/">
-          <img src="/logo.webp">
-        </b-navbar-item>
-      </template>
-      <template slot="end">
-        <b-navbar-item tag="div">
-          <a class="button is-primary" v-on:click="$router.go(-1)">
-            <strong>Back</strong>
-          </a>
-        </b-navbar-item>
-      </template>
-    </b-navbar>
+    <Navbar/>
     <div class="section">
       <div class="container">
-        <div v-for="team in game.teams" :key="team.id">
+        <div v-for="team in game.teams" :key="team.id" class="team">
           <h2 class="title is-2">{{team.name}} ({{team.guessedCount}})</h2>
           <b-table :data="team.players" striped hoverable>
             <template slot-scope="props">
@@ -46,7 +33,7 @@
                   </router-link>
                   <router-link
                     :to="`/games/${game.id}/play?playerId=${props.row.id}`"
-                    class="button" >
+                    class="button is-success" >
                     Play
                   </router-link>
                 </div>
@@ -66,7 +53,9 @@
 import { Component, Vue, Prop } from 'vue-property-decorator';
 import axios from 'axios';
 
-@Component
+import Navbar from '../components/Navbar.vue';
+
+@Component({ components: { Navbar } })
 export default class Games extends Vue {
   @Prop(String) gameId
 
@@ -103,9 +92,13 @@ export default class Games extends Vue {
     display: inline;
   }
 
+  .team {
+    margin-bottom: 30px;
+  }
+
   .game-actions {
     display: flex;
     justify-content: center;
-    margin-top: 60px;
+    margin-top: 30px;
   }
 </style>

@@ -5,24 +5,35 @@
 </template>
 
 <style lang="scss">
-  /* #app {
-     font-family: Avenir, Helvetica, Arial, sans-serif;
-     -webkit-font-smoothing: antialiased;
-     -moz-osx-font-smoothing: grayscale;
-     text-align: center;
-     color: #2c3e50;
-     }
+  @import "~bulma/sass/utilities/_all";
 
-     #nav {
-     padding: 30px;
+  $primary: #00d1b2;
+  $primaryInvert: findColorInvert($primary);
+  $success: #48c774;
+  $successInvert: findColorInvert($success);
+  $warning: #ffdd57;
+  $warningInvert: findColorInvert($warning);
 
-     a {
-     font-weight: bold;
-     color: #2c3e50;
+  $colors: (
+    "white": ($white, $black),
+    "black": ($black, $white),
+    "light": ($light, $light-invert),
+    "dark": ($dark, $dark-invert),
+    "primary": ($primary, $primary-invert),
+    "info": ($info, $info-invert),
+    "success": ($success, $success-invert),
+    "warning": ($warning, $warning-invert),
+    "danger": ($danger, $danger-invert),
+  );
 
-     &.router-link-exact-active {
-     color: #42b983;
-     }
-     }
-     } */
+  $link: $primary;
+  $link-invert: $primary-invert;
+  $link-focus-border: $primary;
+
+  @import "~bulma";
+  @import "~buefy/src/scss/buefy";
+
+  .progress.is-tiny {
+    height: 0.6rem;
+  }
 </style>
