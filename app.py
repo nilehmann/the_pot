@@ -179,7 +179,6 @@ def draw_card(game_id):
 @app.route("/api/games/<string:game_id>/guess", methods=['POST'])
 def guess(game_id):
     data = request.json
-    print(data)
     card = Card.query.get_or_404(data['cardId'])
     card.guessed_by = data['playerId']
     next_card = random_card(game_id)

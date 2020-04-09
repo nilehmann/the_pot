@@ -1,6 +1,8 @@
 <template>
   <div class="play">
-    <Keypress :key-code="32" event="keyup" @pressed="keyPressed" />
+    <!-- Space -->
+    <Keypress :key-code="32" event="keyup" @pressed="spacePressed" />
+    <!-- Esc -->
     <Keypress :key-code="27" event="keyup" @pressed="stop" />
     <Navbar/>
     <div class="section">
@@ -16,7 +18,7 @@
       <div v-else-if="card && state == 'started'" class="container">
         <div class="card-container">
           <b-message class="card">
-            {{card.text}}
+            <strong>{{card.text}}</strong>
           </b-message>
         </div>
         <b-progress :value="timeLeft*100/maxTime" class="timer" size="is-tiny" />
@@ -51,6 +53,10 @@ import Navbar from '../components/Navbar.vue';
 export default class Play extends Vue {
   @Prop(String) gameId
 
+  lastActionTime = null
+
+  throttleMillis = 1000
+
   card = null
 
   state = 'stopped'
@@ -63,7 +69,7 @@ export default class Play extends Vue {
 
   tickMilli = 100;
 
-  keyPressed() {
+  spacePressed() {
     if (this.state === 'stopped') {
       this.start();
     } else if (this.state === 'started') {
@@ -72,35 +78,35 @@ export default class Play extends Vue {
   }
 
   start() {
-    if (this.isLoading || this.state !== 'stopped') {
+    if (this.shouldSkip('stopped')) {
       return;
     }
 
     this.setTimer();
-    this.isLoading = true;
-    axios
-      .get(`${this.$API}/games/${this.gameId}/draw`)
-      .then(this.updateCard);
+    this.apiCall((ax) => ax.get(`${this.$API}/games/${this.gameId}/draw`));
   }
 
   next() {
-    if (this.isLoading || this.state !== 'started' || !this.card) {
+    if (this.shouldSkip('started') || !this.card) {
       return;
     }
-    this.isLoading = true;
-    axios
-      .post(`${this.$API}/games/${this.gameId}/guess`, {
+    this.apiCall((ax) => (
+      ax.post(`${this.$API}/games/${this.gameId}/guess`, {
         playerId: this.playerId,
         cardId: this.card.id,
       })
-      .then(this.updateCard)
-      .catch(this.errorAlert);
+    ));
+  }
+
+  shouldSkip(expectedState) {
+    return this.isLoading || this.state !== expectedState || this.shouldThrottle();
   }
 
   stop() {
     if (this.interval) {
       clearInterval(this.interval);
     }
+    this.lastActionTime = new Date();
     this.state = 'stopped';
   }
 
@@ -130,10 +136,24 @@ export default class Play extends Vue {
     this.isLoading = false;
   }
 
+  shouldThrottle() {
+    const curr = new Date();
+    if (this.lastActionTime && curr - this.lastActionTime <= this.throttleMillis) {
+      return true;
+    }
+    return false;
+  }
+
   errorAlert(error) {
     this.isLoading = false;
     console.log(error);
     this.$buefy.dialog.alert('There was an error');
+  }
+
+  apiCall(f) {
+    this.isLoading = true;
+    this.lastActionTime = new Date();
+    f(axios).then(this.updateCard).catch(this.errorAlert);
   }
 }
 
@@ -156,5 +176,9 @@ export default class Play extends Vue {
 
   .timer {
     width: 500px;
+  }
+
+  .card {
+    font-size: 14pt;
   }
 </style>
