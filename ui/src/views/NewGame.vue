@@ -67,7 +67,7 @@ export default class NewGame extends Vue {
     }
     this.isLoading = true;
     axios
-      .put('http://localhost:5000/games', this.game)
+      .put(`${this.$API}/games`, this.game)
       .then(() => {
         this.$router.replace('/');
       })

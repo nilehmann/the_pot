@@ -17,7 +17,7 @@ export default class Games extends Vue {
 
   mounted() {
     axios
-      .get('http://localhost:5000/games')
+      .get(`${this.$API}/games`)
       .then((response) => {
         this.games = response.data.games;
       });

@@ -1,7 +1,8 @@
+import os
 import random
 
 import sqlalchemy as sa
-from flask import Flask, request
+from flask import Flask, request, safe_join, send_file, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
@@ -73,6 +74,7 @@ class Player(db.Model):
             keys = ['id', 'name', 'guessedCount', 'createdCount']
         data = {}
         for key in keys:
+
             if key == 'id':
                 data[key] = self.id
             if key == 'name':
@@ -107,7 +109,17 @@ class Card(db.Model):
         return data
 
 
-@app.route("/games", methods=["PUT"])
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    path = safe_join('ui/dist', path)
+    if os.path.exists(path):
+        return send_file(path)
+    else:
+        return send_from_directory('ui/dist', 'index.html')
+
+
+@app.route("/api/games", methods=["PUT"])
 def new_game():
     data = request.json
     game = Game(max_cards=data['maxCards'])
@@ -124,18 +136,18 @@ def new_game():
     return game.serialize()
 
 
-@app.route("/games", methods=['GET'])
+@app.route("/api/games", methods=['GET'])
 def games():
     return {'games': [g.serialize() for g in Game.query.all()]}
 
 
-@app.route("/games/<string:game_id>", methods=['GET'])
+@app.route("/api/games/<string:game_id>", methods=['GET'])
 def game(game_id):
     return Game.query.get_or_404(game_id).serialize()
 
 
 # TODO: only participants of the game should allow sending cards
-@app.route("/games/<string:game_id>/cards", methods=['POST', 'GET'])
+@app.route("/api/games/<string:game_id>/cards", methods=['POST', 'GET'])
 def cards(game_id):
     if request.method == 'POST':
         data = request.json
@@ -157,13 +169,13 @@ def cards(game_id):
     return {"cards": [c.serialize() for c in cards], "max_cards": game.max_cards}
 
 
-@app.route("/games/<string:game_id>/draw", methods=['GET'])
+@app.route("/api/games/<string:game_id>/draw", methods=['GET'])
 def draw_card(game_id):
     card = random_card(game_id)
     return {"card": card and card.serialize()}
 
 
-@app.route("/games/<string:game_id>/guess", methods=['POST'])
+@app.route("/api/games/<string:game_id>/guess", methods=['POST'])
 def guess(game_id):
     data = request.json
     print(data)
@@ -174,7 +186,7 @@ def guess(game_id):
     return {"card": next_card and next_card.serialize()}
 
 
-@app.route("/games/<string:game_id>/next_round", methods=['POST'])
+@app.route("/api/games/<string:game_id>/next_round", methods=['POST'])
 def next_round(game_id):
     game = Game.query.get_or_404(game_id)
     results = []

@@ -74,7 +74,7 @@ export default class Games extends Vue {
 
   mounted() {
     axios
-      .get(`http://localhost:5000/games/${this.gameId}`)
+      .get(`${this.$API}/games/${this.gameId}`)
       .then((response) => {
         this.game = response.data;
       })
@@ -83,7 +83,7 @@ export default class Games extends Vue {
 
   nextRound() {
     axios
-      .post(`http://localhost:5000/games/${this.gameId}/next_round`)
+      .post(`${this.$API}/games/${this.gameId}/next_round`)
       .then((response) => {
         this.game = response.data.game;
       })

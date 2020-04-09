@@ -42,12 +42,8 @@ import { Component, Vue, Prop } from 'vue-property-decorator';
 import Keypress from 'vue-keypress';
 import axios from 'axios';
 
-const Components = Vue.extend({
-  components: { Keypress },
-});
-
-@Component
-export default class Play extends Components {
+@Component({ components: { Keypress } })
+export default class Play extends Vue {
   @Prop(String) gameId
 
   card = null
@@ -71,7 +67,7 @@ export default class Play extends Components {
     }
     this.isLoading = true;
     axios
-      .get(`http://localhost:5000/games/${this.gameId}/draw`)
+      .get(`${this.$API}/games/${this.gameId}/draw`)
       .then(this.updateCard);
   }
 
@@ -81,7 +77,7 @@ export default class Play extends Components {
     }
     this.isLoading = true;
     axios
-      .post(`http://localhost:5000/games/${this.gameId}/guess`, {
+      .post(`${this.$API}/games/${this.gameId}/guess`, {
         playerId: this.playerId,
         cardId: this.card.id,
       })

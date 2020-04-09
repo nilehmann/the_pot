@@ -55,7 +55,7 @@ export default class Games extends Vue {
   mounted() {
     this.isLoading = true;
     axios
-      .get(`http://localhost:5000/games/${this.gameId}/cards?playerId=${this.playerId}`)
+      .get(`${this.$API}/games/${this.gameId}/cards?playerId=${this.playerId}`)
       .then((response) => this.updateCards(response))
       .catch(this.errorAlert);
   }
@@ -66,7 +66,7 @@ export default class Games extends Vue {
     }
     this.isLoading = true;
     axios
-      .post(`http://localhost:5000/games/${this.gameId}/cards`, {
+      .post(`${this.$API}/games/${this.gameId}/cards`, {
         playerId: this.playerId,
         cards: this.cards,
       })
